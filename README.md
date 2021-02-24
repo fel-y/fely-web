@@ -1,6 +1,9 @@
 ## Welcome to GitHub Pages
 <iframe src="https://fel-y.github.io/fely-web/test-sketch.html" height="300" width="500"></iframe>
 
+Intro to Leaflet
+<iframe src="https://fel-y.github.io/fely-web/leaflet/leaflet.html" height="300" width="500"></iframe>
+
 You can use the [editor on GitHub](https://github.com/fel-y/fely-web/edit/main/README.md) to maintain and preview the content for your website in Markdown files.
 
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
