@@ -4,8 +4,8 @@
 	<title>Leaflet Exercise</title>
 	<meta charset="utf-8" />
   <div class='map-overlay'>
-  <h2>UBV Vancouver Campus Building locations</h2>
-<p> Enter building name or Address </p>
+  <h2>UBVa Vancouver Campus Building locations</h2>
+<p> Enter building name or Address in the textbox below</p>
   <style>
 		h2{
 		  margin: 10px;
@@ -102,7 +102,7 @@
 		};  
     
     function onEachBuild(feature, layer) {
-       // does this building have properties=?
+       // does this building have properties?
        if (feature.properties && feature.properties.BUILDINGNAME) {
           layer.bindTooltip(feature.properties.BUILDINGNAME);
        }
@@ -113,9 +113,7 @@
     
     function buildPointToLayer(feature, latlng) {
 
-      // the next conditional lets us differentiate between the
-      // styling we use when we are highlighting a particular taxa
-      // of trees versus when we are displaying all trees.
+      // differentiate between the styles based on what we are highlighting
       
       if (buildToHighlight === "" && AddToHighlight === "") {
         buildMarkerOptionsToUse = BuildMark;
@@ -125,7 +123,7 @@
         buildMarkerOptionsToUse = AddMarkHighlight;
       }
       
-      // for the current feature, make a circleMarker.
+      // circle markers.
       return L.circleMarker(
         latlng,
         buildMarkerOptionsToUse
@@ -135,18 +133,15 @@
     function buildToFilter (feature, layer) {
       if(buildToHighlight === "") {
         return true;
-        // In this case, we're not highlighting anything, so draw everything.
+        // str empty, highlight everything
       }
       else if (feature.properties && feature.properties.BUILDINGNAME) { 
-        // checked to make sure there are properties to avoid an error by asking for .name when there are no properties.
-        // Now, we need to check to see if the .TAXA matches what we're trying to highlight.
+        // does properties.BUILDINGNAME match our highlight input request
+        // ignore upper/lower case
         return feature.properties.BUILDINGNAME.toLowerCase().includes(buildToHighlight.toLowerCase());
-				// We ignore uppercase/lowercase differences.
-        
       } else {
         return false;
-        // This is for features that lack properties.
-        // Don't display them.
+        // don't display any feature with no property
       }
     }
     function AddToFilter (feature, layer) {
@@ -161,11 +156,12 @@
  	var LastLayerAdded = {};
     var BuildLayerAdded = {};
     var AddLayerAdded = {};
-    // Keeping track of lastLayerAdded lets us reset the map layers
+    // Keeping track of LayerAdded lets us reset the map layers
     // being shown so we don’t keep on layering new data on old.
     
     function addBuild() {
-      if(map.hasLayer(BuildLayerAdded)||map.hasLayer(AddLayerAdded)){  // reset the map layers if relevant.
+      if(map.hasLayer(BuildLayerAdded)||map.hasLayer(AddLayerAdded)){  
+        // reset the map layers if relevant.
         map.removeLayer(BuildLayerAdded);
         map.removeLayer(AddLayerAdded);
       }
@@ -173,11 +169,8 @@
                                  {pointToLayer: buildPointToLayer,
                  				  onEachFeature: onEachBuild,
                                   filter: buildToFilter
-
-        						// filter out trees we aren't looking for,
-        						//   if any.
       							}
-                       );
+                                 );
       BuildLayerAdded.addTo(map);
     };
     
@@ -189,10 +182,7 @@
                                  {pointToLayer: buildPointToLayer,
                  				  onEachFeature: onEachBuild,
                                   filter: AddToFilter
-
-        						// filter out trees we aren't looking for,
-        						//   if any.
-      							}
+                                 }
                        );
       AddLayerAdded.addTo(map);
     };
@@ -206,17 +196,17 @@
     function highlightBuild() {     
       buildToHighlight = document.getElementById("BuildTextEntry").value; 
       // get any text from the input box.   
-      addBuild(); // add the trees.
-      buildToHighlight = "";  // reset so that "Show All Trees" works.
+      addBuild();
+      buildToHighlight = "";  // reset so that "Show All Buildings" works.
     }
     
     function highlightAdd() {     
       AddToHighlight = document.getElementById("AddTextEntry").value; 
       // get any text from the input box.   
-      addAdd(); // add the trees.
-      AddToHighlight = "";  // reset so that "Show All Trees" works.
+      addAdd();
+      AddToHighlight = ""; 
     }
-		var buildGeoJSONdata; // Where we store tree GeoJSON data
+		var buildGeoJSONdata; //store GeoJSON data
     
     // load GeoJSON from a file on the web
     // $ is jQuery.        
@@ -224,15 +214,15 @@
               function(data){
       					// Store data for later:
 			      		buildGeoJSONdata = data;
-      					// Create event listener for ShowAllTrees Button:
+      					// Create event listener for ShowAllBuild Button:
 								document
                   .getElementById("AllBuildButton")
                   .addEventListener("click", addBuild);
-      					// Create event listener for the highlightTrees Button:
+      					// Create event listener for the highlightBuild Button:
       					document
                   .getElementById("highlightBuildButton")
                   .addEventListener("click", highlightBuild);
-          
+                        // Create event listener for the highlightAdd Button:
       					document
                   .getElementById("highlightAddButton")
                   .addEventListener("click", highlightAdd);      
