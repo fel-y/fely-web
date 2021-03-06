@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Leaflet Exercise</title>
+	<meta charset="utf-8" />
+  <div class='map-overlay'>
+  <h2>UBV Vancouver Campus Building locations</h2>
+  <style>
+		h2{
+		  margin: 10px;
+		  font-size: 1.2em;
+          text-align: center
+		}
+		.map-overlay {
+ 		 position: absolute;
+ 		 bottom: 10;
+ 		 right: 10;
+		  background: rgba(255, 255, 255, 0.8);
+		  margin-right: 0px;
+		  font-family: Arial, sans-serif;
+		  overflow: auto;
+		  border-radius: 5px;
+		}
+	</style>
+
+	<!-- Leaflet styles and code. Place in the <head></head> element. -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" />	
+	<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+
+	<!-- jQuery is a library that simplifies many things in JavaScript. 
+	     We'll use it to retrieve data from the web. -->   
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js">
+  </script>	
+	
+</head>
+<body>
+
+  <div id="mapid" style="width: 600px; height: 400px;"></div>
+	<!-- Our web map will get placed into this div element -->
+
+  <div id="controls" style="margin: 15px;">
+    <button id="AllBuildButton">Show All Buildings</button>
+
+    <span style="display:inline-block; width: 30px"></span>
+    <input type="text" id="BuildTextEntry"
+           placeholder="Building Name">
+    <button id="highlightBuildButton">Highlight</button>
+    
+	</div>
+  
+  <script>
+    
+    // Make a Leaflet map with L.map().
+    // Store the map in the variable 'map'.
+    // "mapid" is the 'id' of the DOM element to contain the map.
+    var map = L.map('mapid',
+                    {center: [49.2606, -123.2460],
+      				zoom: 13.4}  // this object holds map options
+              );
+    
+		var topoTiles = L.tileLayer(
+          'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+                      {maxZoom: 17,
+					attribution: 'Basemap data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Basemap style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'}
+			).addTo(map);
+    
+
+    var BuildMark = {
+    	radius: 4,
+    	fillColor: "#ff9900",
+    	color: "#000",
+    	weight: 1,
+    	opacity: 0.2,
+    	fillOpacity: 0.3
+		};
+    
+    var BuildMarkHighlight = {
+    	radius: 4,
+    	fillColor: "#ff00f6",  // Make highlighted building orange.
+    	color: "#000",
+    	weight: 1,
+    	opacity: 0.7,
+    	fillOpacity: 0.7
+		};
+    
+    function onEachBuild(feature, layer) {
+       // does this tree even have a property named TAXA?
+       if (feature.properties && feature.properties.BUILDINGNAME) {
+          layer.bindTooltip(feature.properties.BUILDINGNAME);
+       }
+    }
+    
+    function buildPointToLayer(feature, latlng) {
+
+      // the next conditional lets us differentiate between the
+      // styling we use when we are highlighting a particular taxa
+      // of trees versus when we are displaying all trees.
+      
+      if (buildToHighlight === "") {
+        buildMarkerOptionsToUse = BuildMark;
+      } else {
+        buildMarkerOptionsToUse = BuildMarkHighlight;
+      }
+      
+      // for the current feature, make a circleMarker.
+      return L.circleMarker(
+        latlng,
+        buildMarkerOptionsToUse
+      );
+    }
+    
+    function buildToFilter (feature, layer) {
+      if(buildToHighlight === "") {
+        return true;
+        // In this case, we're not highlighting anything, so draw everything.
+      }
+      else if (feature.properties && feature.properties.BUILDINGNAME) { 
+        // We just checked to make sure there are properties to avoid an error
+        //   by asking for the .TAXA when there are no properties.
+        // Now, we need to check to see if the .TAXA matches what we're
+        //   trying to highlight.
+        return feature.properties.BUILDINGNAME.toLowerCase().includes(buildToHighlight.toLowerCase());
+				// We ignore uppercase/lowercase differences.
+      } else {
+        return false;
+        // This is for features that lack properties.
+        // Don't display them.
+      }
+    }
+    
+ 		var lastLayerAdded = {};
+    // Keeping track of lastLayerAdded lets us reset the map layers
+    // being shown so we don’t keep on layering new data on old.
+    
+    function addBuild() {
+      if(map.hasLayer(lastLayerAdded)){  // reset the map layers if relevant.
+        map.removeLayer(lastLayerAdded);
+      }
+      lastLayerAdded = L.geoJSON(buildGeoJSONdata, 
+                                 {pointToLayer: buildPointToLayer,
+                 				  onEachFeature: onEachBuild,
+                                  filter: buildToFilter
+        						// filter out trees we aren't looking for,
+        						//   if any.
+      							}
+                       );
+      lastLayerAdded.addTo(map);
+    };
+    
+    var buildToHighlight = "";
+    // This is set by someone pressing the highlight button.
+    // If it's an empty string, then just draw everything.
+        
+    function highlightBuild() {     
+      buildToHighlight = document.getElementById("BuildTextEntry").value; 
+      // get any text from the input box.   
+      addBuild(); // add the trees.
+      buildToHighlight = "";  // reset so that "Show All Trees" works.
+    }
+
+		var buildGeoJSONdata; // Where we store tree GeoJSON data
+    
+    // load GeoJSON from a file on the web
+    // $ is jQuery.        
+		$.getJSON("https://raw.githubusercontent.com/UBCGeodata/ubcv-locations/master/geojson/ubcv_addresses.geojson", 					
+              function(data){
+      					// Store data for later:
+			      		buildGeoJSONdata = data;
+      					// Create event listener for ShowAllTrees Button:
+								document
+                  .getElementById("AllBuildButton")
+                  .addEventListener("click", addBuild);
+      					// Create event listener for the highlightTrees Button:
+      					document
+                  .getElementById("highlightBuildButton")
+                  .addEventListener("click", highlightBuild);
+      
+    					}
+    );
+
+  </script>
+
+</body>
+</html>
