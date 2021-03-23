@@ -3,9 +3,12 @@
 ## Map Excerpt [screenshot]:
 ![472 Lab1 Map Excerpt](472Lab1.pn)
 
-## Final Map [interactive]:
-[Full Map](472_Lab1.htm)
+## Final Map-mapbox [interactive]:
+[Full Map](472_Lab2_mapbox.html)
 <iframe src="472_Lab1.htm" height = '300' width="600"></iframe>
+## Final Map-turf [interactive]:
+[Full Map](472_Lab2_turf.html)
+
 
 Collaboaration and Reliance on other resources:
 Data from Open Data Toronto
